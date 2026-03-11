@@ -26,21 +26,21 @@ from models import GCN_DEEP_DIVER
 
 tf.disable_eager_execution()
 
-N_bd = 500
+N_bd = 32
 ITERATIONS = 10000
 RANDOM_SPLIT = 0.90
 RANDOMNESS_FACTOR = 0.5
 
-model_dir = './model'
+model_dir = './gcn_models/small_graph_DCE_inv/'
 
 # Settings
 flags = tf.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string('model', 'gcn_cheby', 'Model string.')  # 'gcn', 'gcn_cheby', 'dense'
-flags.DEFINE_string('loss','Dist_CE_Soln_loss', 'Loss Function')  # 'CE_loss', 'Dist_CE_loss', 'Dist_CE_Soln_loss'
+flags.DEFINE_string('loss','Dist_CE_loss', 'Loss Function')  # 'CE_loss', 'Dist_CE_loss', 'Dist_CE_Soln_loss'
 flags.DEFINE_float('learning_rate', 0.0001, 'Initial learning rate.')
 flags.DEFINE_integer('epochs', 300, 'Number of epochs to train.')
-flags.DEFINE_integer('hidden1', 64, 'Number of units in hidden layer 1.')
+flags.DEFINE_integer('hidden1', 32, 'Number of units in hidden layer 1.')
 flags.DEFINE_integer('diver_num', 1, 'Number of outputs.')
 flags.DEFINE_float('dropout', 0, 'Dropout rate (1 - keep probaNUmbility).')
 flags.DEFINE_float('weight_decay', 5e-4, 'Weight for L2 loss on embedding matrix.')
@@ -78,7 +78,8 @@ sess = tf.Session(config=config)
 # Define model evaluation function
 def evaluate(features, support, labels,  placeholders, distance, solution_nodes):
     t_test = time.time()
-    feed_dict_val = construct_feed_dict_up(features, support, labels, distance, solution_nodes, placeholders)
+    feed_dict_val = construct_feed_dict_up(features, support, labels, distance, placeholders, solution_nodes)
+    #feed_dict_val = construct_feed_dict_up(features, support, labels, distance, solution_nodes, placeholders)
     outs_val = sess.run([model.loss, model.accuracy, model.outputs_softmax], feed_dict=feed_dict_val)
     return outs_val[0], outs_val[1], (time.time() - t_test), outs_val[2]
 
@@ -101,7 +102,8 @@ predicted_zfs, greedy_zfs = [], []
 
     
 # Load data
-mat_contents = sio.loadmat('sample.mat')
+#mat_contents = sio.loadmat('./Code/sample.mat')
+mat_contents = sio.loadmat('./Data/small_ER/' + os.listdir('./Data/small_ER')[0])
 try:
     adj = mat_contents['adj'].todense()
 except:

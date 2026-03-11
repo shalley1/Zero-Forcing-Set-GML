@@ -12,8 +12,11 @@ For each graph:
 This script is primarily used for benchmarking and comparison
 against learning-based ZFS methods.
 """
-
+import sys
 import os
+
+sys.path.append('%s/modules' % os.path.dirname(os.path.realpath(__file__)))
+
 import time
 import numpy as np
 import scipy.io as sio
@@ -31,8 +34,9 @@ greed_zfs = []     # Placeholder for greedy ZFS results (unused, kept for compat
 greed_time = 0     # Stores runtime of greedy algorithm
 
 # Directory containing test graph files
-base_dir = './data/'
-data_path = os.path.join(base_dir, 'Large_Graph')
+data_path = './Data/Large_ER'
+#base_dir = './Data/Large_ER'
+#data_path = os.path.join(base_dir, 'Large_Graph')
 
 # List all graph files
 val_mat_names = sorted(os.listdir(data_path))
@@ -58,7 +62,9 @@ for idx in range(len(val_mat_names)):
     Z_1, Z_2 = Greedy_ZFS(adjacency)
     greed_time = time.time() - start_time
 
-    print("Greedy ZFS size:", len(Z_2))
+    size=len(Z_2)
+
+    print(f"Greedy ZFS size: {size}, ---  Time: {greed_time}")
 
     # Number of nodes in greedy ZFS
     soln_greedy = len(Z_2)

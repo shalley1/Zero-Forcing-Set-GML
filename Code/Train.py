@@ -59,7 +59,7 @@ RANDOM_SPLIT = 0.90       # Train/validation split ratio
 # -------------------------------------------------------------------
 
 # Directory containing training graph .mat files
-data_path = './data/data_gcn/small_graphs/train/'
+data_path = './Data/small_ER'
 train_mat_names = os.listdir(data_path)
 
 NUM_OF_GRAPHS = len(train_mat_names)
@@ -211,13 +211,28 @@ for epoch in range(FLAGS.epochs):
             distance = mat_contents['distance']
 
         # Load ZFS labels
+       # if 'Z2' in mat_contents:
+       #     y = mat_contents['Z2'].astype(int).reshape((1, -1)).T
+       #     yy = np.zeros((adj.shape[0], 1))
+       #     yy[y] = 1
+       # else:
+       #     yy = mat_contents['sol'].T
+# Load ZFS labels
         if 'Z2' in mat_contents:
             y = mat_contents['Z2'].astype(int).reshape((1, -1)).T
             yy = np.zeros((adj.shape[0], 1))
             yy[y] = 1
-        else:
+        elif 'sol' in mat_contents:
             yy = mat_contents['sol'].T
-
+        elif 'Optimal' in mat_contents:
+            y = mat_contents['Optimal'].astype(int).reshape((1, -1)).T
+            yy = np.zeros((adj.shape[0], 1))
+            yy[y] = 1
+        else:
+            raise KeyError(
+                f"Missing expected solution key in {train_mat_names[graph_id]}. "
+                f"Found keys: {list(mat_contents.keys())}"
+            )
         # Randomly sample one ZFS realization
         y_sample = yy[:, np.random.randint(yy.shape[1])]
         y_train = np.column_stack((1 - y_sample, y_sample))

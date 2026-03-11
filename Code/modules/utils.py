@@ -2,7 +2,7 @@ import numpy as np
 import pickle as pkl
 import networkx as nx
 import scipy.sparse as sp
-from scipy.sparse.linalg.eigen.arpack import eigsh, eigs
+from scipy.sparse.linalg import eigsh, eigs
 import sys
 
 
@@ -149,21 +149,33 @@ def construct_feed_dict(features, support, labels, placeholders):
     feed_dict.update({placeholders['support'][i]: support[i] for i in range(len(support))})
     feed_dict.update({placeholders['num_features_nonzero']: features[1].shape})
     return feed_dict
-
-def construct_feed_dict_up(features, support, labels, dist, solution_nodes, placeholders):
+def construct_feed_dict_up(features, support, labels, dist, placeholders, solution_nodes=None):
     """Construct feed dictionary."""
     feed_dict = dict()
     feed_dict.update({placeholders['labels']: labels})
     feed_dict.update({placeholders['features']: features})
-
-    # distance = distances(support)
-    # feed_dict.update({placeholders['distance']: distance})
     feed_dict.update({placeholders['distance']: dist})
-    feed_dict.update({placeholders['solution_nodes']: solution_nodes})
+
+    if solution_nodes is not None and 'solution_nodes' in placeholders:
+        feed_dict.update({placeholders['solution_nodes']: solution_nodes})
 
     feed_dict.update({placeholders['support'][i]: support[i] for i in range(len(support))})
     feed_dict.update({placeholders['num_features_nonzero']: features[1].shape})
     return feed_dict
+#def construct_feed_dict_up(features, support, labels, dist, solution_nodes, placeholders):
+#    """Construct feed dictionary."""
+#    feed_dict = dict()
+#    feed_dict.update({placeholders['labels']: labels})
+#    feed_dict.update({placeholders['features']: features})
+#
+#    # distance = distances(support)
+#    # feed_dict.update({placeholders['distance']: distance})
+#    feed_dict.update({placeholders['distance']: dist})
+#    feed_dict.update({placeholders['solution_nodes']: solution_nodes})
+#
+#    feed_dict.update({placeholders['support'][i]: support[i] for i in range(len(support))})
+#    feed_dict.update({placeholders['num_features_nonzero']: features[1].shape})
+#    return feed_dict
 
 
 def construct_feed_dict4pred(features, support, placeholders):

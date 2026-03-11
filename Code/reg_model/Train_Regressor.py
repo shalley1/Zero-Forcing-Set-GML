@@ -30,7 +30,8 @@ from joblib import dump, load
 
 
 # Path containing MATLAB (.mat) graph files
-data_path = "./mat_files/"
+#data_path = "./mat_files/"
+data_path = "./Data/small_ER"
 
 
 def feature_extraction(Adjacency):
@@ -78,7 +79,7 @@ def feature_extraction(Adjacency):
     return feat
 
 
-def prepare_data(data_path, feat_file="./reg_model/index.txt"):
+def prepare_data(data_path, feat_file="./Code/reg_model/index.txt"):
     """
     Reads all graph .mat files, extracts features, and saves them
     along with ground-truth ZFS sizes into a CSV file.
@@ -104,22 +105,36 @@ def prepare_data(data_path, feat_file="./reg_model/index.txt"):
             # Extract graph features
             data = feature_extraction(mat_contents["adj"])
 
-            # Retrieve ground-truth ZFS size
             try:
                 z2 = mat_contents["Z2_size"][0]
-            except Exception:
-                # Fallback for different dataset formats
-                if "Z2" in mat_contents:
-                    z2 = mat_contents["Z2_size"]
-                else:
+            except KeyError:
+                if "sol" in mat_contents:
                     z2 = np.sum(mat_contents["sol"])
+                elif "Optimal" in mat_contents:
+                    z2 = len(np.array(mat_contents["Optimal"]).reshape(-1))
+                elif "ZFS" in mat_contents:
+                    z2 = len(np.array(mat_contents["ZFS"]).reshape(-1))
+                else:
+                    raise KeyError(
+                        f"Missing target size key for {file_name}. "
+                        f"Found keys: {list(mat_contents.keys())}"
+                    )
+            # Retrieve ground-truth ZFS size
+           # try:
+           #     z2 = mat_contents["Z2_size"][0]
+           # except Exception:
+           #     # Fallback for different dataset formats
+           #     if "Z2" in mat_contents:
+           #         z2 = mat_contents["Z2_size"]
+           #     else:
+           #         z2 = np.sum(mat_contents["sol"])
 
             data.append(z2)
             csvwriter.writerow(data)
 
 
-def training(feat_file="./reg_model/index.txt",
-             model_file="./reg_model/Regressor.joblib"):
+def training(feat_file="./Code/reg_model/index.txt",
+             model_file="./Code/reg_model/Regressor.joblib"):
     """
     Trains a regression model to estimate ZFS size from graph features
     and saves the trained model to disk.
@@ -174,11 +189,11 @@ def training(feat_file="./reg_model/index.txt",
     ax.legend()
     ax.grid()
 
-    fig.savefig("./reg_model/train.png")
+    fig.savefig("./Code/reg_model/train.png")
 
 
 def testing(mat_file, data_path,
-            model_file="./reg_model/Regressor.joblib"):
+            model_file="./Code/reg_model/Regressor.joblib"):
     """
     Predicts the ZFS size for a single graph using the trained model.
 
@@ -211,7 +226,7 @@ def testing(mat_file, data_path,
 prepare_data(data_path)
 
 # Train and save regression model
-training("./reg_model/index.txt")
+training("./Code/reg_model/index.txt")
 
 # Example testing loop (commented)
 # val_mat_names = sorted(os.listdir(data_path))

@@ -172,7 +172,8 @@ class GCN_DEEP_DIVER(Model):
         self.output_dim = placeholders['labels'].get_shape().as_list()[1]
         self.placeholders = placeholders
         self.distance = placeholders['distance']
-        self.solution_nodes = placeholders['solution_nodes']
+        self.solution_nodes = placeholders.get('solution_nodes', None)
+
         self.optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
 
         self.build()
